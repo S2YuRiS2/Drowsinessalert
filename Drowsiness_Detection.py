@@ -6,6 +6,25 @@ from scipy.spatial import distance as dist
 from imutils import face_utils
 from Alarm import sound_alarm
 from Image_Processing import image_processing
+import pymysql
+import time
+
+mysqldb = pymysql.connect(
+    user = 'root',
+    passwd= 'dbfldbqls12!',
+    host = '127.0.0.1',
+    db = 'sensor',
+    charset = 'utf8'
+)
+
+cursor = mysqldb.cursor()
+sql = "select co2_value, heartbeat_value from sensor"
+
+cursor.execute(sql)
+mysqldb.commit()
+datas = cursor.fetchone()
+
+# print(datas)
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("LearningData/shape_predictor_68_face_landmarks.dat")
@@ -19,7 +38,16 @@ COUNTER = 0
 class Drowsiness_Detection:
     def __init__(self):
         print('init')
-        self.run()
+        while datas:
+            co2_value = datas[0]
+            heartbeat_value = datas[1]
+            print(co2_value)
+            print(heartbeat_value)
+
+            time.sleep(2)
+            if co2_value>=20.0 and heartbeat_value>=10:
+                self.run()
+        # self.run()
 
     def eye_aspect_ratio(self, eye):
         # 유클리드 거리 계산
